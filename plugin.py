@@ -1,11 +1,11 @@
 ##           HomeWizard Wi-Fi P1 Meter Plugin
 ##
 ##           Author:         Eraser
-##           Version:        0.0.1
-##           Last modified:  13-03-2021
+##           Version:        0.0.2
+##           Last modified:  27-03-2021
 ##
 """
-<plugin key="HomeWizardWifiP1Meter" name="HomeWizard Wi-Fi P1 Meter" author="Eraser" version="0.0.1" externallink="https://www.homewizard.nl/p1-meter">
+<plugin key="HomeWizardWifiP1Meter" name="HomeWizard Wi-Fi P1 Meter" author="Eraser" version="0.0.2" externallink="https://www.homewizard.nl/p1-meter">
     <description>
         <h3>Devices</h3>
         <ul style="list-style-type:square">
@@ -59,7 +59,8 @@
 
 import Domoticz
 import json
-import requests
+import urllib
+import urllib.request
 
 class BasePlugin:
     #Plugin variables
@@ -98,6 +99,7 @@ class BasePlugin:
     switch_export_id = 130
     switch_export_value_id = 131
     switch_import_value_id = 132
+    wifi_signal_id = 140
     
     def onStart(self):
         if Parameters["Mode6"] == "Debug":
@@ -197,6 +199,14 @@ class BasePlugin:
                 UpdateDevice(self.total_gas_id, 0, numStr(self.total_gas_m3), True)
             except:
                 Domoticz.Error("Failed to update device id " + str(self.total_gas_id))
+                
+            try:
+                if ( self.wifi_signal_id not in Devices ):
+                    Domoticz.Device(Name="Wifi signal",  Unit=self.wifi_signal_id, TypeName="Percentage").Create()
+                    
+                UpdateDevice(self.wifi_signal_id, 0, numStr(self.wifi_strength), True)
+            except:
+                Domoticz.Error("Failed to update device id " + str(self.wifi_signal_id))
                
         if ( self.switchIntervalCount >= self.switchInterval ):
             self.switchIntervalCount = 0
@@ -259,17 +269,23 @@ class BasePlugin:
 
     def readMeter(self):
         try:
-            wjdata = requests.get("http://" + Parameters["Address"] + ":" + Parameters["Port"] + "/api/v1/data").json()
+            APIdata = urllib.request.urlopen("http://" + Parameters["Address"] + ":" + Parameters["Port"] + "/api/v1/data").read()
         except:
-            Domoticz.Error("Failed to communicate with Wi-Fi P1 meter at ip " + Parameters["Address"] + " with port " + Parameters["Port"] )
+            Domoticz.Error("Failed to communicate with Wi-Fi P1 meter at ip " + Parameters["Address"] + " with port " + Parameters["Port"])
+            return False
+        
+        try:
+            APIjson = json.loads(APIdata.decode("utf-8"))
+        except:
+            Domoticz.Error("Failed converting API data to JSON")
             return False
             
         try:
-            self.onMessage(wjdata, "200", "")
+            self.onMessage(APIjson, "200", "")
         except:
             Domoticz.Error("onMessage failed with some error")
             return False
-
+        
 global _plugin
 _plugin = BasePlugin()
 
@@ -333,10 +349,10 @@ def DumpConfigToLog():
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
 
-def UpdateDevice(Unit, nValue, sValue, AlwaysUpdate=False):    
+def UpdateDevice(Unit, nValue, sValue, AlwaysUpdate=False, SignalLevel=12):    
     # Make sure that the Domoticz device still exists (they can be deleted) before updating it 
     if (Unit in Devices):
         if ((Devices[Unit].nValue != nValue) or (Devices[Unit].sValue != sValue) or (AlwaysUpdate == True)):
-            Devices[Unit].Update(nValue=nValue, sValue=str(sValue))
+            Devices[Unit].Update(nValue=nValue, sValue=str(sValue), SignalLevel=SignalLevel)
             Domoticz.Debug("Update "+str(nValue)+":'"+str(sValue)+"' ("+Devices[Unit].Name+")")
     return
