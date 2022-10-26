@@ -1,9 +1,9 @@
 # HomeWizard-Wifi-p1-plugin
 A Python plugin for Domoticz that creates several devices for the HomeWizard Wifi p1 meter.
 
-![HomeWizard Wi-Fi P1 meter](https://www.homewizard.nl/media/catalog/product/cache/ce597f02fc80ed34f99a6a3b0759b2b4/p/1/p1_meter.png)
+![HomeWizard Wi-Fi P1 meter](https://www.homewizard.com/wp-content/uploads/2021/11/P1_meter_front-400x400.png)
 
-The [HomeWizard Wi-Fi P1 meter](http://www.homewizard.nl/p1-meter) is a little device that can be plugged into the P1 port of your smart energy meter. By default it sends all of its data to the HomeWizard servers but thanks to its local API you can read the device locally too. With this plugin you can use Domoticz to read the meter and store the data without using your internet connection.
+The [HomeWizard Wi-Fi P1 meter](https://www.homewizard.com/nl/p1-meter/) is a little device that can be plugged into the P1 port of your smart energy meter. By default it sends all of its data to the HomeWizard servers but thanks to its local API you can read the device locally too. With this plugin you can use Domoticz to read the meter and store the data without using your internet connection.
 
 # Devices
 
