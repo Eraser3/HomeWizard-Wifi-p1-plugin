@@ -9,7 +9,7 @@
     <description>
         <h3>Devices</h3>
         <ul style="list-style-type:square">
-            <li><b>Current usage</b>: Displays the current power usage in watts. Can de negative when you are producing more power then you are using. 5 minute values are logged.</li>
+            <li><b>Current usage</b>: Displays the current power usage in watts. Can be negative when you are producing more power then you are using. 5 minute values are logged.</li>
             <li><b>Total electricity</b>: Shows usage and return for both tariffs. Current usage is also shown but nog logged.</li>
             <li><b>Total gas</b>: Displays your gas usage per day and total.</li>
             <li><b>Production switch</b>: Automatically turns On when you are delivering power to the grid. This means that you are producing more power than you are currently using.</li>
@@ -152,15 +152,15 @@ class BasePlugin:
                 self.meter_model = Data['meter_model']
                 self.wifi_ssid = Data['wifi_ssid']
                 self.wifi_strength = Data['wifi_strength']
-                self.total_power_import_t1_kwh = int(Data['total_power_import_t1_kwh'] * 1000)
-                self.total_power_import_t2_kwh = int(Data['total_power_import_t2_kwh'] * 1000)
-                self.total_power_export_t1_kwh = int(Data['total_power_export_t1_kwh'] * 1000)
-                self.total_power_export_t2_kwh = int(Data['total_power_export_t2_kwh'] * 1000)
+                self.total_power_import_t1_kwh = int(Data['total_power_import_t1_kwh'] * 1000) if Data['total_power_import_t1_kwh'] else 0
+                self.total_power_import_t2_kwh = int(Data['total_power_import_t2_kwh'] * 1000) if Data['total_power_import_t2_kwh'] else 0
+                self.total_power_export_t1_kwh = int(Data['total_power_export_t1_kwh'] * 1000) if Data['total_power_export_t1_kwh'] else 0
+                self.total_power_export_t2_kwh = int(Data['total_power_export_t2_kwh'] * 1000) if Data['total_power_export_t2_kwh'] else 0
                 self.active_power_w = Data['active_power_w']
                 self.active_power_l1_w = Data['active_power_l1_w']
                 self.active_power_l2_w = Data['active_power_l2_w']
                 self.active_power_l3_w = Data['active_power_l3_w']
-                self.total_gas_m3 = int(Data['total_gas_m3'] * 1000)
+                self.total_gas_m3 = int(Data['total_gas_m3'] * 1000) if Data['total_gas_m3'] else 0
                 self.gas_timestamp = Data['gas_timestamp']
                 
                 if ( self.active_power_w >= 0):
@@ -169,8 +169,8 @@ class BasePlugin:
                 else:
                     self.import_active_power_w = 0
                     self.export_active_power_w = self.active_power_w * -1
-            except:
-                Domoticz.Error("Failed to read response data")
+            except Exception as e:
+                Domoticz.Error("Failed to read response data: %s" % e)
                 return
         
         if ( self.dataIntervalCount >= self.dataInterval ):
