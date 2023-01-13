@@ -7,14 +7,17 @@ The [HomeWizard Wi-Fi P1 meter](https://www.homewizard.com/nl/p1-meter/) is a li
 
 # Devices
 
-The plugin creates a total of 7 devices. Some may not be usefull for everyone but you can safely ignore those.
+The plugin creates several devices depending on the values that are read from your meter. Some may not be usefull for everyone but you can safely ignore those.
  1. An energy meter that shows your daily power draw and feed back on the grid
  2. An energy meter that shows your current power usage
- 3. A gas meter that shows your daily and total usage
- 4. A switch that will turn on once you start feeding back energy to the grid
- 5. A switch that will turn on once you start feeding back a specific amount of energy to the grid
- 6. A switch that will turn on once you draw a specific amount of energy from the grid
- 7. A Wi-Fi signal strength meter that shows the current signal strength from the Wi-Fi P1 meter
+ 3. An energy meter that shows the current power usage per phase (one device per phase)
+ 4. A voltage meter that shows the current voltage per phase (one device per phase)
+ 5. An amperage meter that shows the current amperage per phase (one device per phase)
+ 6. A gas meter that shows your daily and total usage
+ 7. A switch that will turn on once you start feeding back energy to the grid
+ 8. A switch that will turn on once you start feeding back a specific amount of energy to the grid
+ 9. A switch that will turn on once you draw a specific amount of energy from the grid
+ 10. A Wi-Fi signal strength meter that shows the current signal strength from the Wi-Fi P1 meter
 
 # Configuration
 
