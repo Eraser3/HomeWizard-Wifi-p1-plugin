@@ -1,20 +1,25 @@
 ##           HomeWizard Wi-Fi P1 Meter Plugin
 ##
 ##           Author:         Eraser
-##           Version:        0.0.2
-##           Last modified:  27-03-2021
+##           Version:        0.0.3
+##           Last modified:  13-01-2023
 ##
 """
-<plugin key="HomeWizardWifiP1Meter" name="HomeWizard Wi-Fi P1 Meter" author="Eraser" version="0.0.2" externallink="https://www.homewizard.nl/p1-meter">
+<plugin key="HomeWizardWifiP1Meter" name="HomeWizard Wi-Fi P1 Meter" author="Eraser" version="0.0.3" externallink="https://www.homewizard.nl/p1-meter">
     <description>
         <h3>Devices</h3>
         <ul style="list-style-type:square">
             <li><b>Current usage</b>: Displays the current power usage in watts. Can de negative when you are producing more power then you are using. 5 minute values are logged.</li>
-            <li><b>Total electricity</b>: Shows usage and return for both tariffs. Current usage is also shown but nog logged.</li>
+            <li><b>Total electricity</b>: Shows usage and return for both tariffs.</li>
+            <li><b>Current usage</b>: Shows usage and return for both tariffs.</li>
+            <li><b>Usage per phase</b>: Shows usage and return for all phases.</li>
+            <li><b>Voltage per phase</b>: Shows the current voltage for all phases.</li>
+            <li><b>Amperage per phase</b>: Shows the current amperage for all phases.</li>
             <li><b>Total gas</b>: Displays your gas usage per day and total.</li>
             <li><b>Production switch</b>: Automatically turns On when you are delivering power to the grid. This means that you are producing more power than you are currently using.</li>
             <li><b>Production value switch</b>: Automatically turns On when you are delivering the minimum specified amount of power to the grid. Set the minimum value in the settings below.</li>
             <li><b>Usage value switch</b>: Automatically turns On when you are drawing the minimum specified amount of power from the grid. Set the minimum value in the settings below.</li>
+            <li><b>Wifi signal strength</b>: Displays the wifi signal strength for the p1 meter.</li>
         </ul>
         <h3>Configuration</h3>
     </description>
@@ -85,16 +90,31 @@ class BasePlugin:
     active_power_l1_w = -1          #: [Number] Het huidig gebruik voor fase 1 in Watt (indien van toepassing)
     active_power_l2_w = -1          #: [Number] Het huidig gebruik voor fase 2 in Watt (indien van toepassing)
     active_power_l3_w = -1          #: [Number] Het huidig gebruik voor fase 3 in Watt (indien van toepassing)
+    active_voltage_l1_v = -1        #: [Number] Het huidige voltage voor fase 1 in volt (indien van toepassing)
+    active_voltage_l2_v = -1        #: [Number] Het huidige voltage voor fase 2 in volt (indien van toepassing)
+    active_voltage_l3_v = -1        #: [Number] Het huidige voltage voor fase 3 in volt (indien van toepassing)
+    active_current_l1_a = -1        #: [Number] De huidige stroom voor fase 1 in ampere (indien van toepassing)
+    active_current_l2_a = -1        #: [Number] De huidige stroom voor fase 2 in ampere (indien van toepassing)
+    active_current_l3_a = -1        #: [Number] De huidige stroom voor fase 3 in ampere (indien van toepassing)
     total_gas_m3 = -1               #: [Number] De gas meterstand in m3
     gas_timestamp = -1              #: [Number] De datum en tijd van de meest recente gas meterstand gestructureerd als YYMMDDhhmmss.
     
     #Calculated variables
-    import_active_power_w = 0
-    export_active_power_w = 0
+    import_active_power_w = 0       #: Het huidig vermogen wat momenteel van het net wordt geimporteerd.
+    export_active_power_w = 0       #: Het huidig vermogen wat momenteel naar het net wordt geexporteerd.
     
     #Device ID's
     active_power_id = 101
     total_power_id = 102
+    active_power_l1_id = 105
+    active_power_l2_id = 106
+    active_power_l3_id = 107
+    active_voltage_l1_id = 108
+    active_voltage_l2_id = 109
+    active_voltage_l3_id = 110
+    active_current_l1_id = 111
+    active_current_l2_id = 112
+    active_current_l3_id = 113
     total_gas_id = 121
     switch_export_id = 130
     switch_export_value_id = 131
@@ -146,8 +166,11 @@ class BasePlugin:
         self.dataIntervalCount += self.pluginInterval
         self.switchIntervalCount += self.pluginInterval
         
+        #------- Collect data -------
         if ( self.dataIntervalCount >= self.dataInterval or self.switchIntervalCount >= self.switchInterval ):
             try:
+                Domoticz.Debug("Reading electricity values from input")
+                
                 self.smr_version = Data['smr_version']
                 self.meter_model = Data['meter_model']
                 self.wifi_ssid = Data['wifi_ssid']
@@ -157,13 +180,29 @@ class BasePlugin:
                 self.total_power_export_t1_kwh = int(Data['total_power_export_t1_kwh'] * 1000)
                 self.total_power_export_t2_kwh = int(Data['total_power_export_t2_kwh'] * 1000)
                 self.active_power_w = Data['active_power_w']
-                self.active_power_l1_w = Data['active_power_l1_w']
-                self.active_power_l2_w = Data['active_power_l2_w']
-                self.active_power_l3_w = Data['active_power_l3_w']
-                self.total_gas_m3 = int(Data['total_gas_m3'] * 1000)
-                self.gas_timestamp = Data['gas_timestamp']
                 
-                if ( self.active_power_w >= 0):
+                if ( 'active_power_l1_w' in Data ): self.active_power_l1_w = Data['active_power_l1_w']
+                if ( 'active_power_l2_w' in Data ): self.active_power_l2_w = Data['active_power_l2_w']
+                if ( 'active_power_l3_w' in Data ): self.active_power_l3_w = Data['active_power_l3_w']
+                if ( 'active_voltage_l1_v' in Data ): self.active_voltage_l1_v = float(Data['active_voltage_l1_v'])
+                if ( 'active_voltage_l2_v' in Data ): self.active_voltage_l2_v = float(Data['active_voltage_l2_v'])
+                if ( 'active_voltage_l3_v' in Data ): self.active_voltage_l3_v = float(Data['active_voltage_l3_v'])
+                if ( 'active_current_l1_a' in Data ): self.active_current_l1_a = float(Data['active_current_l1_a'])
+                if ( 'active_current_l2_a' in Data ): self.active_current_l2_a = float(Data['active_current_l2_a'])
+                if ( 'active_current_l3_a' in Data ): self.active_current_l3_a = float(Data['active_current_l3_a'])
+                
+                Domoticz.Debug("Reading gas values from input")
+                
+                #New version has room for multiple gas meters. We only monitor the first one if available.
+                for external in Data['external']:
+                    if ( external['type'] == "gas_meter" ):
+                        self.total_gas_m3 = int(external['value'] * 1000)
+                        self.gas_timestamp = external['timestamp']
+                        break
+                    
+                Domoticz.Debug("Calculating active power")
+                
+                if ( self.active_power_w >= 0 ):
                     self.import_active_power_w = self.active_power_w
                     self.export_active_power_w = 0
                 else:
@@ -173,12 +212,14 @@ class BasePlugin:
                 Domoticz.Error("Failed to read response data")
                 return
         
+        #------- Graphs -------
         if ( self.dataIntervalCount >= self.dataInterval ):
             self.dataIntervalCount = 0
             
+            #------- Power -------
             try:
                 if ( self.active_power_id not in Devices ):
-                    Domoticz.Device(Name="Current usage",  Unit=self.active_power_id, Type=243, Subtype=29).Create()
+                    Domoticz.Device(Name="Current power usage",  Unit=self.active_power_id, Type=243, Subtype=29).Create()
                     
                 UpdateDevice(self.active_power_id, 0, numStr(self.active_power_w) + ";0", True)
             except:
@@ -186,12 +227,97 @@ class BasePlugin:
             
             try:
                 if ( self.total_power_id not in Devices ):
-                    Domoticz.Device(Name="Total electricity",  Unit=self.total_power_id, Type=250, Subtype=1).Create()
+                    Domoticz.Device(Name="Total power usage",  Unit=self.total_power_id, Type=250, Subtype=1).Create()
 
                 UpdateDevice(self.total_power_id, 0, numStr(self.total_power_import_t1_kwh) + ";" + numStr(self.total_power_import_t2_kwh) + ";" + numStr(self.total_power_export_t1_kwh) + ";" + numStr(self.total_power_export_t2_kwh) + ";" + numStr(self.import_active_power_w) + ";" + numStr(self.export_active_power_w), True)
             except:
                 Domoticz.Error("Failed to update device id " + str(self.total_power_id))
             
+            #------- Power per fase -------
+            if ( self.active_power_l1_w > -1 ):
+                try:
+                    if ( self.active_power_l1_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-1 power usage",  Unit=self.active_power_l1_id, Type=243, Subtype=29).Create()
+                        
+                    UpdateDevice(self.active_power_l1_id, 0, numStr(self.active_power_l1_w) + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_power_l1_id))
+                
+            if ( self.active_power_l2_w > -1 ):
+                try:
+                    if ( self.active_power_l2_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-2 power usage",  Unit=self.active_power_l2_id, Type=243, Subtype=29).Create()
+                        
+                    UpdateDevice(self.active_power_l2_id, 0, numStr(self.active_power_l2_w) + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_power_l2_id))
+                
+            if ( self.active_power_l3_w > -1 ):
+                try:
+                    if ( self.active_power_l3_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-3 power usage",  Unit=self.active_power_l3_id, Type=243, Subtype=29).Create()
+                        
+                    UpdateDevice(self.active_power_l3_id, 0, numStr(self.active_power_l3_w) + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_power_l3_id))
+                
+            #------- Voltage per fase -------
+            if ( self.active_voltage_l1_v > -1 ):
+                try:
+                    if ( self.active_voltage_l1_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-1 voltage",  Unit=self.active_voltage_l1_id, Type=243, Subtype=8).Create()
+                        
+                    UpdateDevice(self.active_voltage_l1_id, 0, f'{self.active_voltage_l1_v:.3f}' + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_voltage_l1_id))
+                
+            if ( self.active_voltage_l2_v > -1 ):
+                try:
+                    if ( self.active_voltage_l2_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-2 voltage",  Unit=self.active_voltage_l2_id, Type=243, Subtype=8).Create()
+                        
+                    UpdateDevice(self.active_voltage_l2_id, 0, f'{self.active_voltage_l2_v:.3f}' + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_voltage_l2_id))
+            
+            if ( self.active_voltage_l3_v > -1 ):            
+                try:
+                    if ( self.active_voltage_l3_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-3 voltage",  Unit=self.active_voltage_l3_id, Type=243, Subtype=8).Create()
+                        
+                    UpdateDevice(self.active_voltage_l3_id, 0, f'{self.active_voltage_l3_v:.3f}' + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_voltage_l3_id))
+                    
+            #------- Amperage per fase -------
+            if ( self.active_current_l1_a > -1 ):
+                try:
+                    if ( self.active_current_l1_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-1 current",  Unit=self.active_current_l1_id, Type=243, Subtype=23).Create()
+                        
+                    UpdateDevice(self.active_current_l1_id, 0, f'{self.active_current_l1_a:.3f}' + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_current_l1_id))
+                
+            if ( self.active_current_l2_a > -1 ):
+                try:
+                    if ( self.active_current_l2_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-2 current",  Unit=self.active_current_l2_id, Type=243, Subtype=23).Create()
+                        
+                    UpdateDevice(self.active_current_l2_id, 0, f'{self.active_current_l2_a:.3f}' + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_current_l2_id))
+            
+            if ( self.active_current_l3_a > -1 ):            
+                try:
+                    if ( self.active_current_l3_id not in Devices ):
+                        Domoticz.Device(Name="Current phase-3 current",  Unit=self.active_current_l3_id, Type=243, Subtype=23).Create()
+                        
+                    UpdateDevice(self.active_current_l3_id, 0, f'{self.active_current_l3_a:.3f}' + ";0", True)
+                except:
+                    Domoticz.Error("Failed to update device id " + str(self.active_current_l3_id))
+            
+            #------- Gas -------
             try:
                 if ( self.total_gas_id not in Devices ):
                     Domoticz.Device(Name="Total gas",  Unit=self.total_gas_id, TypeName="Gas").Create()
@@ -207,7 +333,8 @@ class BasePlugin:
                 UpdateDevice(self.wifi_signal_id, 0, numStr(self.wifi_strength), True)
             except:
                 Domoticz.Error("Failed to update device id " + str(self.wifi_signal_id))
-               
+            
+        #------- Switches -------
         if ( self.switchIntervalCount >= self.switchInterval ):
             self.switchIntervalCount = 0
             
@@ -285,7 +412,7 @@ class BasePlugin:
         except:
             Domoticz.Error("onMessage failed with some error")
             return False
-        
+
 global _plugin
 _plugin = BasePlugin()
 
