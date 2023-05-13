@@ -78,7 +78,7 @@ class BasePlugin:
     productionSwitchValue = 0
     
     #Homewizard P1 meter variables
-    smr_version = -1                #: [Number] De SMR versie van de meter
+    #smr_version = -1                #: [Number] De SMR versie van de meter
     meter_model = ""                #: [String] Het merk en type indicatie van de slimme meter
     wifi_ssid = ""                  #: [String] Het Wi-Fi netwerk waarmee de P1 meter is verbonden
     wifi_strength = -1              #: [Number] De sterkte van het Wi-Fi signaal in %
@@ -171,7 +171,7 @@ class BasePlugin:
             try:
                 Domoticz.Debug("Reading electricity values from input")
                 
-                self.smr_version = Data['smr_version']
+                #self.smr_version = Data['smr_version']
                 self.meter_model = Data['meter_model']
                 self.wifi_ssid = Data['wifi_ssid']
                 self.wifi_strength = Data['wifi_strength']
