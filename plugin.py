@@ -1,8 +1,8 @@
 ##           HomeWizard Wi-Fi P1 Meter Plugin
 ##
 ##           Author:         Eraser
-##           Version:        1.0.1
-##           Last modified:  31-05-2023
+##           Version:        1.0.3
+##           Last modified:  20-06-2024
 ##
 """
 <plugin key="HomeWizardWifiP1Meter" name="HomeWizard Wi-Fi P1 Meter" author="Eraser" version="1.0.1" externallink="https://www.homewizard.nl/p1-meter">
@@ -52,9 +52,9 @@ class BasePlugin:
     #Homewizard P1 meter variables
     wifi_strength = -1              #: [Number] De sterkte van het Wi-Fi signaal in %
     total_power_import_t1_kwh = -1  #: [Number] De stroom afname meterstand voor tarief 1 in kWh
-    total_power_import_t2_kwh = -1  #: [Number] De stroom afname meterstand voor tarief 2 in kWh
+    total_power_import_t2_kwh = 0   #: [Number] De stroom afname meterstand voor tarief 2 in kWh (indien van toepassing)
     total_power_export_t1_kwh = -1  #: [Number] De stroom teruglevering meterstand voor tarief 1 in kWh
-    total_power_export_t2_kwh = -1  #: [Number] De stroom teruglevering meterstand voor tarief 2 in kWh
+    total_power_export_t2_kwh = 0   #: [Number] De stroom teruglevering meterstand voor tarief 2 in kWh (indien van toepassing)
     active_power_w = -1             #: [Number] Het huidig gebruik van alle fases gecombineerd in Watt
     active_power_l1_w = -1          #: [Number] Het huidig gebruik voor fase 1 in Watt (indien van toepassing)
     active_power_l2_w = -1          #: [Number] Het huidig gebruik voor fase 2 in Watt (indien van toepassing)
@@ -131,14 +131,15 @@ class BasePlugin:
             
             self.wifi_strength = Data['wifi_strength']
             self.total_power_import_t1_kwh = int(Data['total_power_import_t1_kwh'] * 1000)
-            self.total_power_import_t2_kwh = int(Data['total_power_import_t2_kwh'] * 1000)
             self.total_power_export_t1_kwh = int(Data['total_power_export_t1_kwh'] * 1000)
-            self.total_power_export_t2_kwh = int(Data['total_power_export_t2_kwh'] * 1000)
-            self.active_power_w = Data['active_power_w']
-            
-            if ( 'active_power_l1_w' in Data ): self.active_power_l1_w = Data['active_power_l1_w']
-            if ( 'active_power_l2_w' in Data ): self.active_power_l2_w = Data['active_power_l2_w']
-            if ( 'active_power_l3_w' in Data ): self.active_power_l3_w = Data['active_power_l3_w']
+            if ( 'total_power_import_t2_kwh' in Data ): self.total_power_import_t2_kwh = int(Data['total_power_import_t2_kwh'] * 1000)
+            if ( 'total_power_export_t2_kwh' in Data ): self.total_power_export_t2_kwh = int(Data['total_power_export_t2_kwh'] * 1000)
+
+            self.active_power_w = int(Data['active_power_w'])
+
+            if ( 'active_power_l1_w' in Data ): self.active_power_l1_w = int(Data['active_power_l1_w'])
+            if ( 'active_power_l2_w' in Data ): self.active_power_l2_w = int(Data['active_power_l2_w'])
+            if ( 'active_power_l3_w' in Data ): self.active_power_l3_w = int(Data['active_power_l3_w'])
             if ( 'active_voltage_l1_v' in Data ): self.active_voltage_l1_v = float(Data['active_voltage_l1_v'])
             if ( 'active_voltage_l2_v' in Data ): self.active_voltage_l2_v = float(Data['active_voltage_l2_v'])
             if ( 'active_voltage_l3_v' in Data ): self.active_voltage_l3_v = float(Data['active_voltage_l3_v'])
