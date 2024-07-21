@@ -131,9 +131,15 @@ class BasePlugin:
             
             self.wifi_strength = Data['wifi_strength']
             self.total_power_import_t1_kwh = int(Data['total_power_import_t1_kwh'] * 1000)
-            self.total_power_import_t2_kwh = int(Data['total_power_import_t2_kwh'] * 1000)
             self.total_power_export_t1_kwh = int(Data['total_power_export_t1_kwh'] * 1000)
-            self.total_power_export_t2_kwh = int(Data['total_power_export_t2_kwh'] * 1000)
+            # Initialise the t2 variables if the power meter does not have a t2 tariff
+            try:
+                self.total_power_import_t2_kwh = int(Data['total_power_import_t2_kwh'] * 1000)
+                self.total_power_export_t2_kwh = int(Data['total_power_export_t2_kwh'] * 1000)
+            except:
+                self.total_power_import_t2_kwh = 0
+                self.total_power_export_t2_kwh = 0
+
             self.active_power_w = Data['active_power_w']
             
             if ( 'active_power_l1_w' in Data ): self.active_power_l1_w = Data['active_power_l1_w']
